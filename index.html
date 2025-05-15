@@ -1,0 +1,199 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Time-Off Request</title>
+
+  <!-- Calendar widget stylesheet -->
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', Roboto, -apple-system, sans-serif;
+      max-width: 520px;
+      margin: auto;
+      padding: 2rem;
+      background-color: #0a3d62;
+      color: #ffffff;
+      line-height: 1.6;
+    }
+    
+    h2 {
+      margin-top: 0;
+      color: #ffffff;
+      border-bottom: 2px solid #2ecc71;
+      padding-bottom: 10px;
+    }
+    
+    input, textarea, button {
+      font-size: 1rem;
+      padding: 0.75rem;
+      width: 100%;
+      border-radius: 4px;
+      border: none;
+      background-color: rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      margin-top: 5px;
+      box-sizing: border-box;
+    }
+    
+    input::placeholder, textarea::placeholder {
+      color: rgba(255, 255, 255, 0.6);
+    }
+    
+    label {
+      font-weight: 500;
+    }
+    
+    button {
+      width: auto;
+      background-color: #2ecc71;
+      color: #ffffff;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      padding: 0.75rem 2rem;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    
+    button:hover {
+      background-color: #27ae60;
+    }
+    
+    form {
+      background-color: rgba(255, 255, 255, 0.05);
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Make sure calendar appears properly */
+    .flatpickr-calendar {
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      z-index: 1000 !important;
+    }
+    
+    .flatpickr-day.selected {
+      background: #2ecc71 !important;
+      border-color: #2ecc71 !important;
+    }
+    
+    /* Hide debug panel */
+    .calendar-debug {
+      display: none;
+    }
+    
+    /* Responsive styles */
+    @media screen and (max-width: 600px) {
+      body {
+        padding: 1rem;
+      }
+      
+      form {
+        padding: 1.5rem;
+      }
+      
+      h2 {
+        font-size: 1.5rem;
+      }
+      
+      .flatpickr-calendar {
+        width: 100% !important;
+        max-width: 100%;
+      }
+    }
+    
+    @media screen and (max-width: 400px) {
+      body {
+        padding: 0.5rem;
+      }
+      
+      form {
+        padding: 1rem;
+      }
+      
+      input, textarea, button {
+        font-size: 16px; /* Prevents zoom on mobile */
+        padding: 0.6rem;
+      }
+      
+      button {
+        width: 100%;
+        margin-top: 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h2>Request Time Off</h2>
+
+  <!-- n8n webhook post-->
+  <form id="reqForm" action="https://edolini.app.n8n.cloud/webhook/request-f9db4a2e" method="post">
+    <label>Email:<br>
+      <input type="email" name="email" required placeholder="your@email.com">
+    </label><br><br>
+
+    <label>Pick one or more dates:<br>
+      <input id="dates" name="dates" required placeholder="Click to choose dates">
+    </label><br><br>
+    
+    <!-- Debug info -->
+    <div id="calendarDebug" class="calendar-debug">
+      Calendar status: Not initialized yet
+    </div>
+
+    <label>Comment (optional):<br>
+      <textarea name="comment" rows="3" placeholder="Reason for time off request"></textarea>
+    </label><br><br>
+
+    <button type="submit">Submit Request</button>
+  </form>
+
+  <!-- Calendar script - Try both CDN options -->
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://npmcdn.com/flatpickr/dist/flatpickr.min.js"></script>
+  <script>
+    var debugDiv = document.getElementById('calendarDebug');
+    
+    // Check if flatpickr loaded
+    if (typeof flatpickr === 'undefined') {
+      debugDiv.innerHTML = 'Error: Flatpickr library not loaded!';
+    } else {
+      debugDiv.innerHTML = 'Flatpickr library loaded, initializing...';
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      // Turn the plain input into a multi-date picker
+      try {
+        var dateInput = document.getElementById('dates');
+        
+        // Simple click handler to help debug
+        dateInput.addEventListener('click', function() {
+          debugDiv.innerHTML = 'Input clicked. Calendar should appear.';
+        });
+        
+        var calendar = flatpickr('#dates', { 
+          mode: 'multiple', 
+          dateFormat: 'Y-m-d',
+          allowInput: true,
+          inline: true, // Force calendar to always show
+          onOpen: function() { 
+            debugDiv.innerHTML = 'Calendar opened successfully!';
+          },
+          onClose: function() {
+            debugDiv.innerHTML = 'Calendar closed. Selected: ' + dateInput.value;
+          }
+        });
+        
+        debugDiv.innerHTML = "Flatpickr initialized successfully. Click the input field.";
+      } catch (error) {
+        debugDiv.innerHTML = "Error initializing flatpickr: " + error.message;
+        console.error("Error initializing flatpickr:", error);
+      }
+    });
+  </script>
+</body>
+</html>
